@@ -7,6 +7,8 @@ const errorController = require("./controllers/error");
 const sequelize = require("./util/database");
 const Product = require("./models/product");
 const User = require("./models/user");
+const Cart = require("./models/cart");
+const CartItem = require("./models/cart-item");
 
 const app = express();
 
@@ -48,6 +50,13 @@ Product.belongsTo(User, {
 // Add multiple products
 User.hasMany(Product);
 
+// Related to cart
+User.hasOne(Cart);
+Cart.belongsTo(User);
+// Many To Many relationship
+Cart.belongsToMany(Product, { through: CartItem });
+Product.belongsToMany(Cart, { through: CartItem });
+
 // sync's your models to the database which creates the tables/relations
 
 /* sync({ force: true }) for development (not in production)
@@ -71,7 +80,10 @@ sequelize
     return user;
   })
   .then((user) => {
-    console.log(user);
+    console.log('user cart created', user)
+    return user.createCart()
+  })
+  .then((cart) => {
     app.listen(3000);
   })
   .catch((err) => console.log(err));
